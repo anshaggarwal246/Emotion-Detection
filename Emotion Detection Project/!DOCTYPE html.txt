@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emotion Recognition Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Emotion Recognition Game</h1>
+    <button onclick="startGame()">Start Game</button>
+    <div id="videoContainer">
+        <video id="video" autoplay muted></video>
+    </div>
+    <div id="emotionDisplay">Emotion: <span id="emotion">N/A</span></div>
+
+    <!-- Updated CDN link for face-api.js -->
+    <script defer src="https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    <script defer src="script.js"></script>
+</body>
+</html>
+
+
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: Arial, sans-serif;
+}
+
+#videoContainer {
+    position: relative;
+    width: 640px;
+    height: 480px;
+    margin-top: 20px;
+}
+
+video {
+    width: 100%;
+    height: 100%;
+}
+
+#emotionDisplay {
+    margin-top: 10px;
+    font-size: 1.5em;
+    color: #333;
+}

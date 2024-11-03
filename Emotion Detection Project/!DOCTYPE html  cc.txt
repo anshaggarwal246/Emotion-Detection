@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emotion Recognition Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Emotion Recognition Game</h1>
+    <button onclick="startGame()">Start Game</button>
+    <div id="videoContainer">
+        <video id="video" autoplay muted></video>
+    </div>
+    <div id="gameInfo">
+        <p>Score: <span id="score">0</span></p>
+        <p>Target Emotion: <span id="targetEmotion">N/A</span></p>
+        <p>Time Left: <span id="timer">60</span> seconds</p>
+        <p>Detected Emotion: <span id="emotion">N/A</span></p>
+    </div>
+
+    <!-- Include the face-api.js library -->
+    <script defer src="https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    <script defer src="script.js"></script>
+</body>
+</html>
+
+let score = 0;
+let targetEmotion = '';
+let timer = 60;
+let gameInterval, timerInterval;
+
+// Define possible target emotions for this model
+const emotions = ['neutral', 'happy', 'sad', 'angry', 'fearful', 'disgusted', 'surprised'];
+
+// Load the face-api models
+async function loadModels() {
+    console.log("Loading models...");
+    await faceapi.nets.tinyFaceDetector.loadFromUri('models/tiny_face_detector_model-weights_manifest.json');
+    await faceapi.nets.faceExpressionNet.loadFromUri('models/face_expression_model-weights_manifest.json');
+    console.log("Models loaded successfully!");
+}
+
+// Start the game
+async function startGame() {
+    console.log("Start Game button clicked!");
+
+    // Reset game variables
+    score = 0;
+    timer = 60;
+    document.getElementById('score').textContent = score;
+    document.getElementById('timer').textContent = timer;
+
+    // Load the models
+    await loadModels();
+
+    // Set the initial target emotion
+    setNewTargetEmotion();
+
+    // Access video feed
+    const video = document.getElementById('video');
+    navigator.mediaDevices.getUserMedia({ video: {} })
+        .then(stream => {
+            video.srcObject = stream;
+            video.play();
+        })
+        .catch(err => {
+            console.error("Error accessing webcam:", err);
+        });
+
+    // Start the game timer
+    timerInterval = setInterval(updateTimer, 1000);
+
+    // Set up emotion detection and scoring
+    video.addEventListener('playing', () => {
+        const displaySize = { width: video.width, height: video.height };
+        faceapi.matchDimensions(video, displaySize);
+
+        gameInterval = setInterval(async () => {
+            const detections = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions()).withFaceExpressions();
+            if (detections) {
+                // Get the detected emotions with confidence scores
+                const expressions = detections.expressions;
+                const sortedEmotions = expressions.asSortedArray();
+                const detectedEmotion = sortedEmotions[0].expression;
+                const confidence = (sortedEmotions[0].probability * 100).toFixed(2);
+
+                // Display detected emotion with confidence
+                document.getElementById('emotion').textContent = `${detectedEmotion} (${confidence}%)`;
+
+                // Log all emotions to console for debugging
+                console.log("All detected emotions:", sortedEmotions);
+
+                // Check if detected emotion matches target emotion
+                if (detectedEmotion === targetEmotion) {
+                    score++;
+                    document.getElementById('score').textContent = score;
+                    setNewTargetEmotion(); // Change target emotion
+                }
+            }
+        }, 1000);
+    });
+}
+
+// Set a new target emotion
+function setNewTargetEmotion() {
+    targetEmotion = emotions[Math.floor(Math.random() * emotions.length)];
+    document.getElementById('targetEmotion').textContent = targetEmotion;
+}
+
+// Update the game timer
+function updateTimer() {
+    timer--;
+    document.getElementById('timer').textContent = timer;
+
+    if (timer <= 0) {
+        endGame();
+    }
+}
+
+// End the game and display final score
+function endGame() {
+    clearInterval(gameInterval);
+    clearInterval(timerInterval);
+    alert(`Game Over! Your final score is: ${score}`);
+}
+
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+
+#gameInfo {
+    margin-top: 10px;
+    font-size: 1.2em;
+    color: #333;
+}
+
+#videoContainer {
+    position: relative;
+    width: 640px;
+    height: 480px;
+    margin: 20px auto;
+}
+
+video {
+    width: 100%;
+    height: 100%;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+adjust the timer to 7 sec and give this page some cool looks and give me the updated code
